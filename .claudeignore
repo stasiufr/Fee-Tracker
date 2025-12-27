@@ -1,0 +1,111 @@
+{
+  "projectName": "pump-fee-tracker",
+  "description": "Real-time pump.fun fee transparency dashboard",
+  "primaryLanguage": "typescript",
+  "framework": "nextjs",
+  "packageManager": "npm",
+  
+  "codeStyle": {
+    "formatting": "prettier",
+    "linting": "eslint",
+    "typescript": "strict",
+    "components": "functional",
+    "styling": "tailwind"
+  },
+  
+  "conventions": {
+    "fileNaming": {
+      "components": "PascalCase",
+      "utilities": "camelCase",
+      "constants": "SCREAMING_SNAKE_CASE"
+    },
+    "exports": "named",
+    "imports": {
+      "order": ["react", "next", "external", "internal", "relative"],
+      "aliases": {
+        "@/": "src/",
+        "@components/": "components/",
+        "@lib/": "lib/"
+      }
+    }
+  },
+  
+  "testing": {
+    "framework": "vitest",
+    "coverage": true,
+    "minCoverage": 70
+  },
+  
+  "deployment": {
+    "platform": "vercel",
+    "database": "supabase",
+    "regions": ["iad1"]
+  },
+  
+  "priorities": [
+    "Classification accuracy over speed",
+    "User-facing performance matters",
+    "Mobile-first responsive design",
+    "Accessibility basics (aria, contrast)",
+    "Error handling with user feedback"
+  ],
+  
+  "contextFiles": [
+    "CLAUDE.md",
+    "README.md",
+    "lib/classifier.ts",
+    "lib/badges.ts",
+    "prisma/schema.prisma"
+  ]
+}
+```
+
+---
+
+### 4. .cursorrules (si le builder utilise Cursor aussi)
+```
+You are building a pump.fun fee tracker for Creator Capital Markets.
+
+Key context:
+- Next.js 14 App Router
+- Tailwind CSS only (no CSS modules)
+- Supabase + Prisma for database
+- Helius API for Solana data
+- "This is Fine" meme theme
+
+Code principles:
+- TypeScript strict, no `any`
+- Functional React components
+- TanStack Query for server state
+- Handle loading/error states always
+- Mobile-first responsive
+
+Domain knowledge:
+- pump.fun creators earn fees from trades
+- Fees can be: withdrawn (bad), burned (good), held (neutral)
+- Badge tiers based on burn percentage
+- $ASDFASDFA is the reference "good" token (99%+ burns)
+
+When writing components:
+- Use Tailwind classes inline
+- Extract repeated styles to components, not CSS
+- Prefer composition over prop drilling
+- Add aria labels for accessibility
+
+When writing API routes:
+- Validate inputs with zod
+- Return consistent error format
+- Cache expensive queries
+- Log errors to console (Vercel captures)
+
+When writing database queries:
+- Always use Prisma client
+- Include proper indexes in schema
+- Handle not-found cases
+- Use transactions for multi-step operations
+
+File references:
+- Classification logic: lib/classifier.ts
+- Badge calculation: lib/badges.ts  
+- Database schema: prisma/schema.prisma
+- API client: lib/helius.ts

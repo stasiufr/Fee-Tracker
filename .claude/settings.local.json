@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git clone:*)",
+      "Bash(git pull:*)",
+      "Bash(mkdir:*)",
+      "Bash(dir /B /S)",
+      "Bash(cat:*)",
+      "Bash(npm install)",
+      "Bash(dir:*)",
+      "Bash(npx prisma generate)",
+      "Bash(npm run db:generate:*)",
+      "Bash(export PATH=\"./node_modules/.bin:$PATH\")",
+      "Bash(prisma generate:*)",
+      "Bash(node ./node_modules/prisma/build/index.js:*)",
+      "Bash(cmd //c \"rd /s /q node_modules\\\\.cache\")",
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(node -e:*)",
+      "Bash(timeout 20 npm run dev:*)",
+      "Bash(curl:*)",
+      "Bash(tasklist:*)",
+      "Bash(cmd //c \"tasklist\")",
+      "Bash(cmd //c \"tasklist | findstr /i node\")",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c \"taskkill /F /PID 16696\")",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

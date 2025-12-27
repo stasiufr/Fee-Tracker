@@ -1,0 +1,110 @@
+// Prisma schema for Pump.fun Fee Tracker
+// Database: Supabase (PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl is only needed for migrations with Prisma Accelerate
+  // Uncomment when running migrations: directUrl = env("DIRECT_URL")
+}
+
+// Tokens tracked from pump.fun
+model Token {
+  id            Int      @id @default(autoincrement())
+  mint          String   @unique @db.VarChar(44)
+  name          String?  @db.VarChar(100)
+  symbol        String?  @db.VarChar(20)
+  creatorWallet String?  @map("creator_wallet") @db.VarChar(44)
+  creatorVault  String?  @map("creator_vault") @db.VarChar(44)
+  imageUri      String?  @map("image_uri")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Aggregated stats (updated by indexer)
+  totalFeesCollected  BigInt  @default(0) @map("total_fees_collected")
+  totalFeesBurned     BigInt  @default(0) @map("total_fees_burned")
+  totalFeesWithdrawn  BigInt  @default(0) @map("total_fees_withdrawn")
+  totalFeesHeld       BigInt  @default(0) @map("total_fees_held")
+  burnPercentage      Decimal @default(0) @map("burn_percentage") @db.Decimal(5, 2)
+  badgeTier           String? @map("badge_tier") @db.VarChar(20)
+
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  feeEvents FeeEvent[]
+  creator   Creator?   @relation(fields: [creatorWallet], references: [wallet])
+
+  @@index([burnPercentage(sort: Desc)])
+  @@index([creatorWallet])
+  @@index([updatedAt])
+  @@map("tokens")
+}
+
+// Individual fee events (transactions)
+model FeeEvent {
+  id              Int      @id @default(autoincrement())
+  tokenId         Int      @map("token_id")
+  eventType       String   @map("event_type") @db.VarChar(20) // 'collect', 'withdraw', 'burn'
+  amountLamports  BigInt   @map("amount_lamports")
+  signature       String   @unique @db.VarChar(88)
+  blockTime       DateTime @map("block_time")
+
+  // For burns: additional context
+  burnedTokenMint   String? @map("burned_token_mint") @db.VarChar(44)
+  burnedTokenAmount BigInt? @map("burned_token_amount")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  token Token @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+
+  @@index([tokenId, blockTime(sort: Desc)])
+  @@index([eventType])
+  @@index([blockTime(sort: Desc)])
+  @@map("fee_events")
+}
+
+// Creator profiles (aggregated across all their tokens)
+model Creator {
+  id                    Int      @id @default(autoincrement())
+  wallet                String   @unique @db.VarChar(44)
+  totalTokensCreated    Int      @default(0) @map("total_tokens_created")
+  totalFeesEarned       BigInt   @default(0) @map("total_fees_earned")
+  totalFeesBurned       BigInt   @default(0) @map("total_fees_burned")
+  overallBurnPercentage Decimal  @default(0) @map("overall_burn_percentage") @db.Decimal(5, 2)
+  badgeTier             String?  @map("badge_tier") @db.VarChar(20)
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tokens Token[]
+
+  @@index([overallBurnPercentage(sort: Desc)])
+  @@map("creators")
+}
+
+// Proof-of-History records for cryptographic verification
+// Compatible with asdf-validator PoH format
+model PoHRecord {
+  id              Int      @id @default(autoincrement())
+  sequence        Int      // Order in the chain
+  hash            String   @unique @db.VarChar(64) // SHA-256 hash
+  prevHash        String   @map("prev_hash") @db.VarChar(64) // Link to previous
+  timestamp       DateTime
+  slot            Int?     // Solana slot number
+  eventType       String   @map("event_type") @db.VarChar(20) // collect, burn, withdraw
+  vault           String   @db.VarChar(10) // BC, AMM, UNKNOWN
+  tokenMint       String   @map("token_mint") @db.VarChar(44)
+  tokenSymbol     String?  @map("token_symbol") @db.VarChar(20)
+  amountLamports  BigInt   @map("amount_lamports")
+  signature       String   @db.VarChar(88)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([tokenMint, sequence])
+  @@index([tokenMint, sequence])
+  @@index([signature])
+  @@map("poh_records")
+}
